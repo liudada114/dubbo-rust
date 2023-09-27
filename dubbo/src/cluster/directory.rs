@@ -30,6 +30,8 @@ use crate::{
 };
 use dubbo_base::Url;
 use dubbo_logger::tracing;
+use dubbo_logger::tracing::log;
+use dubbo_logger::tracing::log::log;
 
 use crate::cluster::Directory;
 
@@ -93,27 +95,35 @@ impl Directory for RegistryDirectory {
     fn list(&self, invocation: Arc<RpcInvocation>) -> Vec<BoxInvoker> {
         let service_name = invocation.get_target_service_unique_name();
 
-        let url = Url::from_url(&format!(
-            "triple://{}:{}/{}",
-            "127.0.0.1", "8888", service_name
-        ))
-        .unwrap();
+        // let url = Url::from_url(&format!(
+        //     "provider://{}:{}/{}",
+        //     "172.16.1.85", "8888", service_name
+        // ))
+        // .unwrap();
+
+        let subscribe_url = Url::from_url("provider://172.16.1.85:8888/phoenixakacenter.PhoenixAkaCenter?anyhost=true&application=phoenixakacenter-provider&background=false&bind.ip=172.16.1.85&bind.port=8888&category=configurators&check=false&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=phoenixakacenter.PhoenixAkaCenter&ipv6=fd00:6cb1:58a2:8ddf:0:0:0:1000&methods=query_exchange_rate&pid=44270&service-name-mapping=true&side=provider").unwrap();
 
         self.registry
             .subscribe(
-                url,
+                subscribe_url,
                 Arc::new(MemoryNotifyListener {
                     service_instances: Arc::clone(&self.service_instances),
                 }),
             )
             .expect("subscribe");
 
-        let map = self
-            .service_instances
-            .read()
-            .expect("service_instances.read");
-        let binding = Vec::new();
-        let url_vec = map.get(&service_name).unwrap_or(&binding);
+        // let binding = Vec::new();
+        // let url_vec = map.get(&service_name).unwrap_or(&binding);
+        let url_vec = loop {
+            let map = self
+                .service_instances
+                .read()
+                .expect("service_instances.read");
+
+            if let Some(url_vec) = map.get("providers:phoenixakacenter.PhoenixAkaCenter::") {
+                break url_vec.to_owned()
+            }
+        };
         // url_vec.to_vec()
         let mut invokers: Vec<BoxInvoker> = vec![];
         for item in url_vec.iter() {

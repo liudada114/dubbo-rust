@@ -17,7 +17,7 @@
 
 #![allow(unused_variables, dead_code, missing_docs)]
 
-use dubbo_logger::tracing::debug;
+use dubbo_logger::tracing::{debug, log};
 use std::{
     collections::HashMap,
     sync::{Arc, RwLock},
@@ -112,7 +112,11 @@ impl NotifyListener for MemoryNotifyListener {
         debug!("notify {:?}", event);
         let mut map = self.service_instances.write().expect("msg");
         match event.action.as_str() {
-            "ADD" => map.insert(event.key, event.service),
+            "ADD" | "CHANGE" => {
+                map.entry(event.key)
+                    .and_modify(|service| service.clone_from(&event.service))
+                    .or_insert(event.service);
+            },
             &_ => todo!(),
         };
     }
