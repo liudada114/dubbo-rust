@@ -101,7 +101,7 @@ impl Directory for RegistryDirectory {
         // ))
         // .unwrap();
 
-        let subscribe_url = Url::from_url("provider://172.16.1.85:8888/phoenixakacenter.PhoenixAkaCenter?anyhost=true&application=phoenixakacenter-provider&background=false&bind.ip=172.16.1.85&bind.port=8888&category=configurators&check=false&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=phoenixakacenter.PhoenixAkaCenter&ipv6=fd00:6cb1:58a2:8ddf:0:0:0:1000&methods=query_exchange_rate&pid=44270&service-name-mapping=true&side=provider").unwrap();
+        let subscribe_url = Url::from_url("provider://172.16.1.53:8888/phoenixakacenter.PhoenixAkaCenter?anyhost=true&application=phoenixakacenter-provider&background=false&bind.ip=172.16.1.85&bind.port=8888&category=configurators&check=false&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=phoenixakacenter.PhoenixAkaCenter&ipv6=fd00:6cb1:58a2:8ddf:0:0:0:1000&methods=query_exchange_rate&pid=44270&service-name-mapping=true&side=provider").unwrap();
 
         self.registry
             .subscribe(

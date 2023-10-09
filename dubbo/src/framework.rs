@@ -125,7 +125,7 @@ impl Dubbo {
         let mut async_vec: Vec<Pin<Box<dyn Future<Output = BoxExporter> + Send>>> = Vec::new();
         for (name, items) in self.protocols.iter() {
             for url in items.iter() {
-                let mut service_url = Url::from_url("tri://127.0.0.1:8888/phoenixakacenter.PhoenixAkaCenter?anyhost=true&application=phoenixakacenter-provider&background=false&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=phoenixakacenter.PhoenixAkaCenter&methods=query_exchange_rate,query_trade_date&pid=7015&service-name-mapping=true&side=provider&timestamp=1670060843807").unwrap();
+                let mut service_url = Url::from_url("tri://127.0.0.1:88888/phoenixakacenter.PhoenixAkaCenter?anyhost=true&application=phoenixakacenter-provider&background=false&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=phoenixakacenter.PhoenixAkaCenter&methods=query_exchange_rate,query_trade_date&pid=7015&service-name-mapping=true&side=provider&timestamp=1670060843807").unwrap();
                 tracing::info!("base: {:?}, service url: {:?}", name, url);
                 let exporter = mem_reg.clone().export(service_url.to_owned());
                 async_vec.push(exporter);
