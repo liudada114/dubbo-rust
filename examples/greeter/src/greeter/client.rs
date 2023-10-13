@@ -26,6 +26,7 @@ use dubbo::codegen::*;
 
 use dubbo_base::Url;
 use futures_util::StreamExt;
+use dubbo_config::RootConfig;
 use protos::{greeter_client::GreeterClient, GreeterRequest};
 use registry_nacos::NacosRegistry;
 use registry_zookeeper::ZookeeperRegistry;

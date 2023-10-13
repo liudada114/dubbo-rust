@@ -120,6 +120,15 @@ impl Url {
         self.renew_raw_url_string();
     }
 
+    pub fn set_params(&mut self, params: &HashMap<String, String>) {
+        params.iter()
+            .for_each(|(key, value)| {
+            self.params.insert(key.to_string(), value.to_string());
+        });
+
+        self.renew_raw_url_string();
+    }
+
     pub fn raw_url_string(&self) -> String {
         self.raw_url_string.clone()
     }

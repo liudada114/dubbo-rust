@@ -81,7 +81,7 @@ impl Dubbo {
         // env::set_var("ZOOKEEPER_SERVERS",root_config);
         for (_, service_config) in root_config.provider.services.iter() {
             tracing::info!("init service name: {}", service_config.interface);
-            let url = if root_config
+            let (url, params) = if root_config
                 .protocols
                 .contains_key(service_config.protocol.as_str())
             {
@@ -89,9 +89,9 @@ impl Dubbo {
                     .protocols
                     .get_protocol_or_default(service_config.protocol.as_str());
                 let protocol_url =
-                    format!("{}/{}", protocol.to_url(), service_config.interface.clone(),);
+                    format!("{}/{}", protocol.clone().to_url(), service_config.interface.clone(),);
                 tracing::info!("protocol_url: {:?}", protocol_url);
-                Url::from_url(&protocol_url)
+                (Url::from_url(&protocol_url), protocol.params)
             } else {
                 return Err(format!("base {:?} not exists", service_config.protocol).into());
             };
@@ -99,7 +99,9 @@ impl Dubbo {
             if url.is_none() {
                 continue;
             }
-            let u = url.unwrap();
+            let mut u = url.unwrap();
+            u.set_params(&params);
+            tracing::info!("url: {:?}", u);
             if self.protocols.get(&service_config.protocol).is_some() {
                 self.protocols
                     .get_mut(&service_config.protocol)
@@ -125,9 +127,8 @@ impl Dubbo {
         let mut async_vec: Vec<Pin<Box<dyn Future<Output = BoxExporter> + Send>>> = Vec::new();
         for (name, items) in self.protocols.iter() {
             for url in items.iter() {
-                let mut service_url = Url::from_url("tri://127.0.0.1:1234/phoenixakacenter.PhoenixAkaCenter?anyhost=true&application=phoenixakacenter-provider&background=false&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=phoenixakacenter.PhoenixAkaCenter&methods=query_exchange_rate,query_trade_date&pid=7015&service-name-mapping=true&side=provider&timestamp=1670060843807").unwrap();
                 tracing::info!("base: {:?}, service url: {:?}", name, url);
-                let exporter = mem_reg.clone().export(service_url.to_owned());
+                let exporter = mem_reg.clone().export(url.to_owned());
                 async_vec.push(exporter);
                 //TODO multiple registry
                 if self.registries.is_some() {
@@ -135,7 +136,7 @@ impl Dubbo {
                         .as_ref()
                         .unwrap()
                         .default_registry()
-                        .register(service_url.clone())
+                        .register(url.clone())
                         .unwrap();
                 }
             }

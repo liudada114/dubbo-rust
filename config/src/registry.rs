@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
@@ -22,4 +23,12 @@ pub struct RegistryConfig {
     pub protocol: String,
     #[serde(default)]
     pub address: String,
+
+    pub params: HashMap<String, String>,
+}
+
+impl RegistryConfig {
+    pub fn to_url(&self) -> String {
+        format!("{}://{}/{}", self.protocol, self.address, self.params.get("interface").unwrap_or(&"".to_string()))
+    }
 }

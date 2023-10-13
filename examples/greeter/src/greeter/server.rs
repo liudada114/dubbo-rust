@@ -23,15 +23,18 @@ use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
 
 use dubbo::{codegen::*, Dubbo};
+use dubbo_base::Url;
 use dubbo_config::RootConfig;
 use dubbo_logger::{
     tracing::{info, span},
     Level,
 };
+use dubbo_logger::tracing::log;
 use protos::{
     greeter_server::{register_server, Greeter},
     GreeterReply, GreeterRequest,
 };
+use registry_nacos::NacosRegistry;
 use registry_zookeeper::ZookeeperRegistry;
 
 pub mod protos {
@@ -50,15 +53,33 @@ async fn main() {
     register_server(GreeterServerImpl {
         name: "greeter".to_string(),
     });
-    let zkr = ZookeeperRegistry::default();
     let r = RootConfig::new();
     let r = match r.load() {
         Ok(config) => config,
         Err(_err) => panic!("err: {:?}", _err), // response was droped
     };
-    let mut f = Dubbo::new()
-        .with_config(r)
-        .add_registry("zookeeper", Box::new(zkr));
+
+    let mut f = Dubbo::new();
+
+    for (_, registry_config) in r.registries.iter() {
+        if registry_config.protocol.contains("zookeeper") {
+            let registry = ZookeeperRegistry::new(&registry_config.to_url());
+            f = f.add_registry(&registry_config.protocol, Box::new(registry));
+        } else if registry_config.protocol.contains("nacos") {
+            let mut url = Url::from_url(&registry_config.to_url()).unwrap();
+            if registry_config.params.len() > 0 {
+                url.set_params(&registry_config.params);
+            }
+            let registry = NacosRegistry::new(url);
+            f = f.add_registry(&registry_config.protocol, Box::new(registry));
+        } else {
+            log::error!("Currently only zookeeper and nacos is supported as the registry center.");
+            return;
+        }
+    }
+
+    f = f.with_config(r);
+
     f.start().await;
 }
 
