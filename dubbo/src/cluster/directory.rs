@@ -111,7 +111,7 @@ impl Directory for RegistryDirectory {
         url.set_param("dubbo", "2.0.2");
         url.set_param("dynamic", "true");
         url.set_param("generic", "false");
-        url.set_param("interface", "phoenixakacenter.PhoenixAkaCenter");
+        url.set_param("interface", "org.apache.dubbo.sample.tri.Greeter");
         url.set_param("ipv6", "fd00:6cb1:58a2:8ddf:0:0:0:1000");
         url.set_param("methods", "query_exchange_rate");
         url.set_param("pid", "44270");

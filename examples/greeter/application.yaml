@@ -15,9 +15,10 @@ dubbo:
         dynamic: true
         generic: false
         methods: query_exchange_rate,query_trade_date
-        pid: 7015
+        pid: 7016
         service-name-mapping: true
         side: provider
+        interface: org.apache.dubbo.sample.tri.Greeter
   registries:
     demoNAS:
       protocol: nacos
@@ -32,4 +33,4 @@ dubbo:
         version: 1.0.0
         group: test
         protocol: triple
-        interface: phoenixakacenter.PhoenixAkaCenter
+        interface: org.apache.dubbo.sample.tri.Greeter
