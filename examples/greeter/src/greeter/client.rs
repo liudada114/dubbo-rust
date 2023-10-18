@@ -37,15 +37,38 @@ async fn main() {
 
     let mut builder = ClientBuilder::new();
 
+    let mut url = Url::from_url(&format!(
+        "provider://{}:{}/{}",
+        "127.0.0.1", "1234", "phoenixakacenter.PhoenixAkaCenter"
+    ))
+        .unwrap();
+    url.set_param("anyhost", "true");
+    url.set_param("application", "phoenixakacenter-provider");
+    url.set_param("background", "false");
+    url.set_param("bind.ip", "127.0.0.1");
+    url.set_param("bind.port", "1234");
+    url.set_param("category", "configurators");
+    url.set_param("check", "false");
+    url.set_param("deprecated", "false");
+    url.set_param("dubbo", "2.0.2");
+    url.set_param("dynamic", "true");
+    url.set_param("generic", "false");
+    url.set_param("interface", "phoenixakacenter.PhoenixAkaCenter");
+    url.set_param("ipv6", "fd00:6cb1:58a2:8ddf:0:0:0:1000");
+    url.set_param("methods", "query_exchange_rate");
+    url.set_param("pid", "44270");
+    url.set_param("service-name-mapping", "true");
+    url.set_param("side", "provider");
+
     if let Ok(zk_servers) = env::var("ZOOKEEPER_SERVERS") {
         let zkr = ZookeeperRegistry::new(&zk_servers);
-        let directory = RegistryDirectory::new(Box::new(zkr));
+        let directory = RegistryDirectory::new(url, Box::new(zkr));
         builder = builder.with_directory(Box::new(directory));
     } else if let Ok(nacos_url_str) = env::var("NACOS_URL") {
         // NACOS_URL=nacos://mse-96efa264-p.nacos-ans.mse.aliyuncs.com
         let nacos_url = Url::from_url(&nacos_url_str).unwrap();
         let registry = NacosRegistry::new(nacos_url);
-        let directory = RegistryDirectory::new(Box::new(registry));
+        let directory = RegistryDirectory::new(url, Box::new(registry));
         builder = builder.with_directory(Box::new(directory));
     } else {
         builder = builder.with_host("http://127.0.0.1:8888");

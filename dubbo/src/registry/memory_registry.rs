@@ -22,8 +22,11 @@ use std::{
     collections::HashMap,
     sync::{Arc, RwLock},
 };
+use itertools::Itertools;
 
 use dubbo_base::Url;
+use crate::codegen::TripleInvoker;
+use crate::protocol::BoxInvoker;
 
 use super::{NotifyListener, Registry, RegistryNotifyListener};
 
@@ -104,18 +107,31 @@ impl Registry for MemoryRegistry {
 }
 
 pub struct MemoryNotifyListener {
-    pub service_instances: Arc<RwLock<HashMap<String, Vec<Url>>>>,
+    // pub service_instances: Arc<RwLock<HashMap<String, Vec<Url>>>>,
+    pub invokers: Arc<RwLock<HashMap<String, Vec<BoxInvoker>>>>
 }
 
 impl NotifyListener for MemoryNotifyListener {
     fn notify(&self, event: super::ServiceEvent) {
         debug!("notify {:?}", event);
-        let mut map = self.service_instances.write().expect("msg");
+        let mut map = self.invokers.write().expect("msg");
         match event.action.as_str() {
             "ADD" | "CHANGE" => {
                 map.entry(event.key)
-                    .and_modify(|service| service.clone_from(&event.service))
-                    .or_insert(event.service);
+                    .and_modify(|invokers| {
+                        invokers.clear();
+                        for item in event.service.iter() {
+                            invokers.push(Box::new(TripleInvoker::new(item.clone())));
+                        }
+                    })
+                    .or_insert({
+                        let mut invokers: Vec<BoxInvoker> = vec![];
+                        for item in event.service.iter() {
+                            invokers.push(Box::new(TripleInvoker::new(item.clone())));
+                        }
+                        invokers
+                    }
+                    );
             },
             &_ => todo!(),
         };

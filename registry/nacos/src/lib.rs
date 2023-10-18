@@ -646,6 +646,8 @@ pub mod tests {
 
         let ret = registry.subscribe(subscribe_url, Arc::new(TestNotifyListener));
 
+        info!("subscribe result: {:?}", ret);
+
         if let Err(e) = ret {
             error!("error message: {:?}", e);
             return;

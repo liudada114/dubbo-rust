@@ -86,7 +86,12 @@ where
         let uri = self.host.clone();
         let fut = async move {
             debug!("send base call to {}", uri);
-            let mut con = connector.call(uri).await.unwrap();
+            let con = connector.call(uri).await;
+            if let Err(e) = con {
+                return Err(Self::Error::from(e))
+            }
+
+            let mut con = con.unwrap();
 
             con.call(req)
                 .await

@@ -80,72 +80,68 @@ impl Directory for StaticDirectory {
 pub struct RegistryDirectory {
     registry: Arc<BoxRegistry>,
     service_instances: Arc<RwLock<HashMap<String, Vec<Url>>>>,
+    invokers: Arc<RwLock<HashMap<String, Vec<BoxInvoker>>>>
 }
 
 impl RegistryDirectory {
-    pub fn new(registry: BoxRegistry) -> RegistryDirectory {
+    pub fn new(subscribe_url: Url, registry: BoxRegistry) -> RegistryDirectory {
+        // let mut url = Url::from_url(&format!(
+        //     "provider://{}:{}/{}",
+        //     "127.0.0.1", "1234", service_name
+        // ))
+        //     .unwrap();
+        // url.set_param("anyhost", "true");
+        // url.set_param("application", "phoenixakacenter-provider");
+        // url.set_param("background", "false");
+        // url.set_param("bind.ip", "127.0.0.1");
+        // url.set_param("bind.port", "1234");
+        // url.set_param("category", "configurators");
+        // url.set_param("check", "false");
+        // url.set_param("deprecated", "false");
+        // url.set_param("dubbo", "2.0.2");
+        // url.set_param("dynamic", "true");
+        // url.set_param("generic", "false");
+        // url.set_param("interface", "phoenixakacenter.PhoenixAkaCenter");
+        // url.set_param("ipv6", "fd00:6cb1:58a2:8ddf:0:0:0:1000");
+        // url.set_param("methods", "query_exchange_rate");
+        // url.set_param("pid", "44270");
+        // url.set_param("service-name-mapping", "true");
+        // url.set_param("side", "provider");
+
+        // let subscribe_url = Url::from_url("provider://172.16.1.53:1234/phoenixakacenter.PhoenixAkaCenter?anyhost=true&application=phoenixakacenter-provider&background=false&bind.ip=127.0.0.1&bind.port=1234&category=configurators&check=false&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=phoenixakacenter.PhoenixAkaCenter&ipv6=fd00:6cb1:58a2:8ddf:0:0:0:1000&methods=query_exchange_rate&pid=44270&service-name-mapping=true&side=provider").unwrap();
+
+        let service_instances = Arc::new(RwLock::new(HashMap::new()));
+        let invokers = Arc::new(RwLock::new(HashMap::new()));
+
+
+        registry
+            .subscribe(
+                subscribe_url,
+                Arc::new(MemoryNotifyListener {
+                    invokers: Arc::clone(&invokers),
+                }),
+            )
+            .expect("subscribe");
+
         RegistryDirectory {
             registry: Arc::new(registry),
-            service_instances: Arc::new(RwLock::new(HashMap::new())),
+            service_instances,
+            invokers,
         }
     }
 }
 
 impl Directory for RegistryDirectory {
     fn list(&self, invocation: Arc<RpcInvocation>) -> Vec<BoxInvoker> {
-        let service_name = invocation.get_target_service_unique_name();
+        let map = self
+            .invokers
+            .read()
+            .expect("service_instances.read");
 
-        let mut url = Url::from_url(&format!(
-            "provider://{}:{}/{}",
-            "127.0.0.1", "1234", service_name
-        ))
-        .unwrap();
-        url.set_param("anyhost", "true");
-        url.set_param("application", "phoenixakacenter-provider");
-        url.set_param("background", "false");
-        url.set_param("bind.ip", "127.0.0.1");
-        url.set_param("bind.port", "1234");
-        url.set_param("category", "configurators");
-        url.set_param("check", "false");
-        url.set_param("deprecated", "false");
-        url.set_param("dubbo", "2.0.2");
-        url.set_param("dynamic", "true");
-        url.set_param("generic", "false");
-        url.set_param("interface", "org.apache.dubbo.sample.tri.Greeter");
-        url.set_param("ipv6", "fd00:6cb1:58a2:8ddf:0:0:0:1000");
-        url.set_param("methods", "query_exchange_rate");
-        url.set_param("pid", "44270");
-        url.set_param("service-name-mapping", "true");
-        url.set_param("side", "provider");
-
-        // let subscribe_url = Url::from_url("provider://172.16.1.53:1234/phoenixakacenter.PhoenixAkaCenter?anyhost=true&application=phoenixakacenter-provider&background=false&bind.ip=127.0.0.1&bind.port=1234&category=configurators&check=false&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=phoenixakacenter.PhoenixAkaCenter&ipv6=fd00:6cb1:58a2:8ddf:0:0:0:1000&methods=query_exchange_rate&pid=44270&service-name-mapping=true&side=provider").unwrap();
-
-        self.registry
-            .subscribe(
-                url,
-                Arc::new(MemoryNotifyListener {
-                    service_instances: Arc::clone(&self.service_instances),
-                }),
-            )
-            .expect("subscribe");
-
-        // let binding = Vec::new();
-        // let url_vec = map.get(&service_name).unwrap_or(&binding);
-        let url_vec = loop {
-            let map = self
-                .service_instances
-                .read()
-                .expect("service_instances.read");
-
-            if let Some(url_vec) = map.get("providers:phoenixakacenter.PhoenixAkaCenter::") {
-                break url_vec.to_owned()
-            }
-        };
-        // url_vec.to_vec()
-        let mut invokers: Vec<BoxInvoker> = vec![];
-        for item in url_vec.iter() {
-            invokers.push(Box::new(TripleInvoker::new(item.clone())));
+        if let Some(invokers) = map.get(&format!("providers:{}::", invocation.get_target_service_unique_name())) {
+            return invokers.to_owned()
         }
-        invokers
+
+        vec![]
     }
 }
