@@ -23,3 +23,9 @@ pub struct RegistryConfig {
     #[serde(default)]
     pub address: String,
 }
+
+impl RegistryConfig {
+    pub fn to_url(&self) -> String {
+        format!("{}://{}", self.protocol, self.address)
+    }
+}

@@ -25,7 +25,7 @@ use serde::{Deserialize, Serialize};
 
 use super::{protocol::ProtocolConfig, provider::ProviderConfig, service::ServiceConfig};
 
-pub const DUBBO_CONFIG_PATH: &str = "application.yaml";
+pub const DUBBO_CONFIG_PATH: &str = "config/application.yaml";
 
 pub static GLOBAL_ROOT_CONFIG: OnceCell<RootConfig> = OnceCell::new();
 pub const DUBBO_CONFIG_PREFIX: &str = "dubbo";
