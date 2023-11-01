@@ -27,7 +27,7 @@ pub struct Protocol {
     pub port: String,
     pub name: String,
 
-    #[serde(skip_serializing, skip_deserializing)]
+    // #[serde(skip_serializing, skip_deserializing)]
     pub params: HashMap<String, String>,
 }
 

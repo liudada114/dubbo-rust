@@ -6,6 +6,8 @@ dubbo:
       ip: 0.0.0.0
       port: '8888'
       name: tri
+      params:
+        weight: 1.0
   registries:
     demoZK:
       protocol: zookeeper
