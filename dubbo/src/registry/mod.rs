@@ -50,7 +50,7 @@ pub trait NotifyListener {
 pub struct ServiceEvent {
     pub key: String,
     pub action: String,
-    pub service: Vec<Url>,
+    pub service: Vec<(Url, String)>,
 }
 
 pub type BoxRegistry = Box<dyn Registry + Send + Sync>;

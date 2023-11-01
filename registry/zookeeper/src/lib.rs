@@ -298,7 +298,7 @@ impl Registry for ZookeeperRegistry {
                         .to_string()
                         .as_str()
                         .into();
-                    provider_url
+                    (provider_url, "".to_string())
                 })
                 .collect(),
         };
@@ -332,11 +332,11 @@ impl Watcher for ServiceInstancesChangedListener {
                 .zk_client
                 .get_children(&event_path, false)
                 .expect("msg");
-            let result: Vec<Url> = dirs
+            let result: Vec<(Url, String)> = dirs
                 .iter()
                 .map(|node_key| {
                     let provider_url: Url = node_key.as_str().into();
-                    provider_url
+                    (provider_url, "".to_string())
                 })
                 .collect();
             let res = self.zk_client.get_children_w(

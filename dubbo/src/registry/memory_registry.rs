@@ -112,7 +112,7 @@ impl NotifyListener for MemoryNotifyListener {
         debug!("notify {:?}", event);
         let mut map = self.service_instances.write().expect("msg");
         match event.action.as_str() {
-            "ADD" => map.insert(event.key, event.service),
+            "ADD" => map.insert(event.key, event.service.iter().map(|data| data.0.to_owned()).collect()),
             &_ => todo!(),
         };
     }

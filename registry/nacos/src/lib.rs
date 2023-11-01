@@ -511,14 +511,19 @@ impl nacos_sdk::api::naming::NamingEventListener for NotifyListenerWrapper {
     fn event(&self, event: Arc<nacos_sdk::api::naming::NamingChangeEvent>) {
         let service_name = event.service_name.clone();
         let instances = event.instances.as_ref();
-        let urls: Vec<Url>;
+        let urls: Vec<(Url, String)>;
         if let Some(instances) = instances {
             urls = instances
                 .iter()
                 .filter_map(|data| {
                     let url_str =
                         format!("triple://{}:{}/{}", data.ip(), data.port(), service_name);
-                    Url::from_url(&url_str)
+                    let url = Url::from_url(&url_str);
+                    if url.is_none() {
+                        None
+                    } else {
+                        Some((url.unwrap(), data.metadata.get("weight").unwrap().to_owned()))
+                    }
                 })
                 .collect();
         } else {
