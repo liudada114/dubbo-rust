@@ -18,8 +18,8 @@
 use std::{io::ErrorKind, pin::Pin};
 
 use async_trait::async_trait;
+use dubbo_registry_nacos::NacosRegistry;
 use futures_util::{Stream, StreamExt};
-use registry_nacos::NacosRegistry;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
 
