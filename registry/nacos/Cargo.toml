@@ -10,7 +10,7 @@ repository = "https://github.com/apache/dubbo-rust.git"
 
 [dependencies]
 nacos-sdk = { version = "0.3", features = ["naming", "auth-by-http", "async"] }
-dubbo.workspace = true
+dubbo = {path = "../../dubbo/", version = "0.4.0" }
 serde_json.workspace = true
 serde = { workspace = true, features = ["derive"] }
 anyhow.workspace = true
