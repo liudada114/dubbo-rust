@@ -1,6 +1,6 @@
 [package]
-name = "registry-zookeeper"
-version = "0.3.0"
+name = "dubbo-registry-zookeeper"
+version = "0.4.0"
 edition = "2021"
 license = "Apache-2.0"
 description = "dubbo-rust-registry-zookeeper"
@@ -10,7 +10,7 @@ repository = "https://github.com/apache/dubbo-rust.git"
 
 [dependencies]
 zookeeper = "0.8.0"
-dubbo.workspace = true
+dubbo = {path = "../../dubbo/", version = "0.4.0" }
 anyhow.workspace = true
 serde_json.workspace = true
 serde = { workspace = true, features = ["derive"] }
